@@ -13,7 +13,7 @@ registerPlugin({
 			'Description']
 	}, {
 		name: 'userChannels',
-		title: 'Each line represents TS3 Ids and Twitch UserIDs (tsID:twitchID)',
+		title: 'Each line represents TS3 Unique Ids and Twitch UserIDs (tsID:twitchID)',
 		type: 'multiline',
 		conditions: [{
 			field: 'mode',
@@ -35,12 +35,12 @@ registerPlugin({
 		placeholder: '30'
 	}, {
 		name: 'twitchLiveGroup',
-		title: 'Group-Number of your Twitch Live Server Group',
+		title: 'Group-Number of your "Twitch Live Display" Server Group',
 		type: 'number',
 		placeholder: '123'
 	}, {
 		name: 'infoChannelMode',
-		title: 'Create Info Channels for List of Streamers',
+		title: 'Enable a Channel where its description and name show Live streamers',
 		type: 'select',
 		options: [
 			'Disabled',
@@ -79,7 +79,7 @@ registerPlugin({
 		}]
 	}, {
 		name: 'clientIdTwitch',
-		title: 'Your Twitch Dev-App Client ID ( https://dev.twitch.tv/dashboard/apps )',
+		title: 'Your Twitch Dev-App Client ID ( https://twitchtokengenerator.com/ )',
 		type: 'string'
 	}, {
 		name: 'tokenTwitch',
@@ -248,6 +248,7 @@ registerPlugin({
 			var liveStreamerCount = onlineStreamer.length;
 			var infoChannelDesc = "[b][size=18][color=#FF0000]L[/color][color=#BF003F]I[/color][color=#7F007F]V[/color][color=#3F00BF]E[/color] Twitch Streamer (" + liveStreamerCount + ")[/size][/b]\r\n\r\n";
 			var liveChannelsCheck = [];
+			//Sort the names, so that it updates the Content only when something has changed
 			onlineStreamerContent.sort(function (a, b) {
 				if (a.name < b.name) { return -1; }
 				if (a.name > b.name) { return 1; }
@@ -315,7 +316,6 @@ registerPlugin({
 					}
 					var infoChannel = backend.getChannelByID(config.twitchInfoChannel);
 					if (infoChannel != null) {
-						logToOutput(infoChannel.description() + " vs " + infoChannelDesc, false);
 						if (infoChannel.description() != infoChannelDesc) {
 							infoChannel.setName(infoChannelName);
 							infoChannel.setDescription(infoChannelDesc);
@@ -346,8 +346,7 @@ registerPlugin({
 		if (config.mode == 0) {
 			logToOutput('Checking Twitch Live Status for ' + tsTwitch.length + ' users', false);
 			//check for all users that are configurated
-			checkStreamerCount = tsTwitch.length;
-			for (i = 0; i < checkStreamerCount; i++) {
+			for (i = 0; i < tsTwitch.length; i++) {
 				//usr looks like this:  globalTwitchID63274gs82=:myChannelTV
 				var usr = tsTwitch[i];
 				//we split with the delimeter
@@ -363,6 +362,7 @@ registerPlugin({
 					if (client != undefined && client != null) {
 						//client is found and is online
 						logToOutput(client.name() + ' is online in Teamspeak', false);
+						checkStreamerCount += 1;
 						//and we check for the client's live status
 						checkLiveStatus(client, twitchID);
 					} else {
